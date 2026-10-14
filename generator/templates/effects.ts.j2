@@ -1,0 +1,155 @@
+{{ header }}
+import { Injectable{% if apis or initialize %}, inject{% endif %} } from "@angular/core";
+{% if navigations %}
+import { Router } from "@angular/router";
+{% endif %}
+{% if apis or initialize %}
+import { Actions, createEffect, ofType } from "@ngrx/effects";
+{% if init_reads_state %}
+import { Store } from "@ngrx/store";
+{% endif %}
+import { {% if mark_pristine %}forkJoin, {% endif %}of{% if mark_pristine %}, race{% endif %} } from "rxjs";
+import { catchError, map{% if initialize %}, mergeMap{% endif %}, switchMap{% if navigations or form_fills or mark_pristine %}, tap{% endif %}{% if mark_pristine %}, take{% endif %}{% if init_reads_state %}, withLatestFrom{% endif %} } from "rxjs/operators";
+
+import { {{ service_name }} } from "../services/{{ slug }}-api.service";
+{% if form_fills or mark_pristine %}
+import { {{ form_class }} } from "{{ form_import }}";
+{% endif %}
+{% if model_imports %}
+import type {
+{% for name in model_imports %}
+  {{ name }},
+{% endfor %}
+} from "../models/{{ slug }}.models";
+{% endif %}
+import {
+{% for name in action_imports %}
+  {{ name }},
+{% endfor %}
+} from "./{{ slug }}.actions";
+{% if init_reads_state %}
+import type { {{ class_prefix }}State } from "./{{ slug }}.state";
+import { select{{ class_prefix }}State } from "./{{ slug }}.selectors";
+{% endif %}
+{% endif %}
+
+@Injectable()
+export class {{ class_name }} {
+{% if apis or initialize %}
+  private readonly actions$ = inject(Actions);
+  private readonly api = inject({{ service_name }});
+{% if form_fills or mark_pristine %}
+  private readonly screenForm = inject({{ form_class }});
+{% endif %}
+{% if navigations %}
+  private readonly router = inject(Router);
+{% endif %}
+{% if initialize %}
+{% if init_reads_state %}
+  private readonly store = inject(Store);
+{% endif %}
+
+  readonly {{ initialize }}$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType({{ initialize }}),
+{% if init_reads_state %}
+      withLatestFrom(this.store.select(select{{ class_prefix }}State)),
+{% if init_routes %}
+      mergeMap(([action, state]: [{{ init_action_type }}, {{ class_prefix }}State]) => [
+{% else %}
+      mergeMap(([, state]: [unknown, {{ class_prefix }}State]) => [
+{% endif %}
+{% else %}
+      mergeMap((action: {{ init_action_type }}) => [
+{% endif %}
+{% for call in init_calls %}
+        {{ call }},
+{% endfor %}
+      ]),
+    ),
+  );
+{% endif %}
+{% for api in apis %}
+
+  readonly {{ api.effect }} = createEffect(() =>
+    this.actions$.pipe(
+      ofType({{ api.action }}),
+{% if api.has_request %}
+      switchMap((action: {{ api.request_name }}) =>
+        this.api.{{ api.method_name }}(action).pipe(
+{% else %}
+      switchMap(() =>
+        this.api.{{ api.method_name }}().pipe(
+{% endif %}
+          map((body: {{ api.response_name }}) => {{ api.success }}({ body })),
+          catchError((error: unknown) =>
+            of(
+              {{ api.failure }}({
+                message: error instanceof Error ? error.message : "",
+              }),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+{% endfor %}
+{% for fill in form_fills %}
+
+  readonly {{ fill.effect }} = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType({{ fill.success }}),
+        tap((action: { body: {{ fill.response_name }} }) => {
+          this.screenForm.form.patchValue({
+{% for item in fill.assignments %}
+            {{ item.control }}: action.body.{{ item.field }},
+{% endfor %}
+          });
+        }),
+      ),
+    { dispatch: false },
+  );
+{% endfor %}
+{% if mark_pristine %}
+
+  readonly markFormPristine$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType({{ initialize }}),
+        switchMap(() =>
+          race(
+            forkJoin([
+{% for name in mark_pristine.successes %}
+              this.actions$.pipe(ofType({{ name }}), take(1)),
+{% endfor %}
+            ]).pipe(
+              tap(() => {
+                this.screenForm.form.markAsPristine();
+              }),
+            ),
+            this.actions$.pipe(
+              ofType({{ mark_pristine.failures | join(", ") }}),
+              take(1),
+            ),
+          ),
+        ),
+      ),
+    { dispatch: false },
+  );
+{% endif %}
+{% for nav in navigations %}
+
+  readonly {{ nav.effect }} = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType({{ nav.success }}),
+        tap(() => {
+          this.router.navigateByUrl({{ nav.literal }});
+        }),
+      ),
+    { dispatch: false },
+  );
+{% endfor %}
+{% endif %}
+}

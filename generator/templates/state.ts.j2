@@ -1,0 +1,19 @@
+{{ header }}
+{% if model_imports %}
+import type {
+{% for name in model_imports %}
+  {{ name }},
+{% endfor %}
+} from "../models/{{ slug }}.models";
+
+{% endif %}
+export const {{ feature_key }}FeatureKey = {{ feature_literal }};
+
+export interface {{ class_prefix }}State {{ state_body }}
+
+{% if spec_initial %}
+// 11.1 の初期ページ、初期表示件数、初期ソートを state の初期値にする。それ以外は型のゼロ値。
+{% else %}
+// state_types に初期値の項目はない。数値 0、文字列 ""、真偽値 false、配列 [] は型のゼロ値であり、画面仕様の初期値ではない。
+{% endif %}
+export const initial{{ class_prefix }}State: {{ class_prefix }}State = {{ initial_body }};

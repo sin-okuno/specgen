@@ -1,0 +1,43 @@
+<section data-area-type="LIST">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">製品名</th>
+        <th scope="col">状態</th>
+        <th scope="col">編集</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of items(); track item.id) {
+        <tr (click)="openRow(item.id)" (keydown.enter)="openRow(item.id)" tabindex="0">
+          <td>{{ item.id == null || item.id === "" ? "-" : item.id }}</td>
+          <td>{{ item.name == null || item.name === "" ? "-" : item.name }}</td>
+          <td>{{ codeLabel("CODE-001", item.status, "-") }}</td>
+          <td>
+            <button type="button" aria-label="編集" (click)="openRowEdit(item.id, $event)" (keydown.enter)="$event.stopPropagation()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" fill="none" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  @if (listReceived() && items().length === 0) {
+    <p>データがありません</p>
+  }
+  <div>
+    <label for="pagination-page">ページ変更</label>
+    <input id="pagination-page" type="number" [value]="page()" (change)="changePaginationPage($event)" />
+    <label for="pagination-pageSize">表示件数変更</label>
+    <select id="pagination-pageSize" [value]="pageSize().toString()" (change)="changePaginationPageSize($event)">
+      @for (size of pageSizes; track size) {
+        <option [value]="size">{{ size }}</option>
+      }
+    </select>
+    <label for="sort-ordering">ソート変更</label>
+    <input id="sort-ordering" type="text" [value]="ordering()" (change)="changeSortOrdering($event)" />
+  </div>
+</section>

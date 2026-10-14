@@ -1,0 +1,30 @@
+{
+  "version": "0.7",
+  "files": [
+    {
+      "file": "create-screen-spec.md",
+      "screen_id": "SCR-002",
+      "errors": [],
+      "status": "PASS"
+    },
+    {
+      "file": "detail-screen-spec.md",
+      "screen_id": "SCR-004",
+      "errors": [],
+      "status": "PASS"
+    },
+    {
+      "file": "edit-screen-spec.md",
+      "screen_id": "SCR-003",
+      "errors": [],
+      "status": "PASS"
+    },
+    {
+      "file": "list-screen-spec.md",
+      "screen_id": "SCR-001",
+      "errors": [],
+      "status": "PASS"
+    }
+  ],
+  "total_errors": 0
+}

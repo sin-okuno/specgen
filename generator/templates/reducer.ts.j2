@@ -1,0 +1,26 @@
+{{ header }}
+import { createReducer{% if cases %}, on{% endif %} } from "@ngrx/store";
+{% if action_imports %}
+import {
+{% for name in action_imports %}
+  {{ name }},
+{% endfor %}
+} from "./{{ slug }}.actions";
+{% endif %}
+import { initial{{ class_prefix }}State } from "./{{ slug }}.state";
+{% if use_state_type %}
+import type { {{ class_prefix }}State } from "./{{ slug }}.state";
+{% endif %}
+{% if model_imports %}
+import type {
+{% for name in model_imports %}
+  {{ name }},
+{% endfor %}
+} from "../models/{{ slug }}.models";
+{% endif %}
+
+export const {{ feature_key }}Reducer = createReducer(
+  initial{{ class_prefix }}State{% for case in cases %},
+{{ case }}{% endfor %}
+
+);

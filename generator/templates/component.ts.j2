@@ -1,0 +1,301 @@
+{{ header }}
+{% if area.columns %}
+import { Component, Signal, inject{% if area.empty %}, signal{% endif %} } from "@angular/core";
+{% if area.empty %}
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+{% endif %}
+{% if area.row_nav %}
+import { Router } from "@angular/router";
+{% endif %}
+{% if area.empty %}
+import { Actions, ofType } from "@ngrx/effects";
+{% endif %}
+import { Store } from "@ngrx/store";
+
+{% if area.model_import %}
+{{ area.model_import }}
+{% endif %}
+{% if area.paging %}
+import type { {{ area.paging.request_name }} } from "../models/{{ slug }}.models";
+import { {{ area.paging.action_imports | join(", ") }}{% if area.empty and area.empty.success not in area.paging.action_imports %}, {{ area.empty.success }}{% endif %} } from "../store/{{ slug }}.actions";
+{% elif area.empty %}
+import { {{ area.empty.success }} } from "../store/{{ slug }}.actions";
+{% endif %}
+import { {{ area.items_selector }}{% if area.paging %}, {{ area.paging.selectors | join(", ") }}{% endif %} } from "../store/{{ slug }}.selectors";
+{% if area.paging %}
+import type { {{ area.state_name }} } from "../store/{{ slug }}.state";
+import { {{ area.form_class }} } from "{{ area.form_import }}";
+{% endif %}
+
+/** {{ area.area_name }} */
+@Component({
+  selector: "{{ area.selector }}",
+  templateUrl: "./{{ area.file_stem }}.component.html",
+  standalone: false,
+})
+export class {{ area.class_name }} {
+  private readonly store = inject(Store);
+{% if area.row_nav %}
+  private readonly router = inject(Router);
+{% endif %}
+{% if area.paging %}
+  private readonly queryForm = inject({{ area.form_class }});
+  private readonly state: Signal<{{ area.state_name }}> = this.store.selectSignal(
+    {{ area.state_selector }},
+  );
+  protected readonly pageSizes: readonly number[] = [{{ area.paging.sizes }}];
+{% for signal in area.paging.signals %}
+  protected readonly {{ signal.name }} = this.store.selectSignal({{ signal.selector }});
+{% endfor %}
+{% endif %}
+  protected readonly items: Signal<{{ area.items_type }}> = this.store.selectSignal(
+    {{ area.items_selector }},
+  );
+{% if area.empty %}
+  protected readonly listReceived = signal(false);
+
+  constructor() {
+    inject(Actions)
+      .pipe(ofType({{ area.empty.success }}), takeUntilDestroyed())
+      .subscribe(() => {
+        this.listReceived.set(true);
+      });
+  }
+{% endif %}
+{% if area.has_code %}
+
+  protected codeLabel(group: string, code: string, empty: string): string {
+{% for group in area.code_groups %}
+    if (group === {{ group.literal }}) {
+      const table = {{ feature_key }}Codes[{{ group.key }}];
+{% for row in group.rows %}
+      if (code === {{ row.literal }}) {
+        return table{{ row.member }};
+      }
+{% endfor %}
+    }
+{% endfor %}
+    return empty;
+  }
+{% endif %}
+{% if area.row_nav %}
+
+  protected openRow(id: number): void {
+    this.router.navigateByUrl({{ area.row_nav.literal }} + "/" + encodeURIComponent(String(id)));
+  }
+
+  protected openRowEdit(id: number, event: Event): void {
+    event.stopPropagation();
+    this.router.navigateByUrl(
+      {{ area.row_nav.literal }} + "/" + encodeURIComponent(String(id)) + "/edit",
+    );
+  }
+{% endif %}
+{% if area.paging %}
+{% for method in area.paging.methods %}
+
+  protected {{ method.method }}(event: Event): void {
+{% for line in method.lines %}
+    {{ line }}
+{% endfor %}
+  }
+{% endfor %}
+{% endif %}
+}
+{% elif area.facts %}
+import { Component, Signal, inject } from "@angular/core";
+import { Store } from "@ngrx/store";
+
+{% if area.facts.model_import %}
+{{ area.facts.model_import }}
+{% endif %}
+import { {{ area.facts.selector }} } from "../store/{{ slug }}.selectors";
+
+/** {{ area.area_name }} */
+@Component({
+  selector: "{{ area.selector }}",
+  templateUrl: "./{{ area.file_stem }}.component.html",
+  standalone: false,
+})
+export class {{ area.class_name }} {
+  private readonly store = inject(Store);
+  protected readonly {{ area.facts.signal }}: Signal<{{ area.facts.type_name }}> =
+    this.store.selectSignal({{ area.facts.selector }});
+{% if area.facts.has_code %}
+
+  protected codeLabel(group: string, code: string, empty: string): string {
+{% for group in area.facts.code_groups %}
+    if (group === {{ group.literal }}) {
+      const table = {{ feature_key }}Codes[{{ group.key }}];
+{% for row in group.rows %}
+      if (code === {{ row.literal }}) {
+        return table{{ row.member }};
+      }
+{% endfor %}
+    }
+{% endfor %}
+    return empty;
+  }
+{% endif %}
+}
+{% elif area.fields %}
+import { Component{% if area.options %}, Signal{% endif %}, inject } from "@angular/core";
+{% if area.options %}
+import { Store } from "@ngrx/store";
+{% endif %}
+{% if area.type_imports %}
+
+import type { {{ area.type_imports | join(", ") }} } from "../models/{{ slug }}.models";
+{% endif %}
+{% if area.selector_imports %}
+import { {{ area.selector_imports | join(", ") }} } from "../store/{{ slug }}.selectors";
+{% endif %}
+import { {{ area.form_class }} } from "{{ area.form_import }}";
+
+/** {{ area.area_name }} */
+@Component({
+  selector: "{{ area.selector }}",
+  templateUrl: "./{{ area.file_stem }}.component.html",
+  standalone: false,
+})
+export class {{ area.class_name }} {
+  protected readonly queryForm = inject({{ area.form_class }});
+{% if area.options %}
+  private readonly store = inject(Store);
+{% for option in area.options %}
+  protected readonly {{ option.param }}: Signal<{{ option.element }}[]> = this.store.selectSignal(
+    {{ option.selector }},
+  );
+{% endfor %}
+{% endif %}
+}
+{% elif area.buttons %}
+import { Component{% if area.needs_store %}, Signal{% endif %}{% if area.needs_submit_guard or area.needs_loading_guard %}, signal{% endif %}, inject } from "@angular/core";
+{% if area.needs_submit_guard or area.needs_loading_guard %}
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+{% endif %}
+{% if area.needs_route %}
+import { ActivatedRoute{% if area.needs_router %}, Router{% endif %} } from "@angular/router";
+{% elif area.needs_router %}
+import { Router } from "@angular/router";
+{% endif %}
+{% if area.needs_submit_guard or area.needs_loading_guard %}
+import { Actions, ofType } from "@ngrx/effects";
+{% endif %}
+{% if area.needs_store %}
+import { Store } from "@ngrx/store";
+{% endif %}
+
+{% if area.type_imports %}
+import type { {{ area.type_imports | join(", ") }} } from "../models/{{ slug }}.models";
+{% endif %}
+{% if area.action_imports %}
+import { {{ area.action_imports | join(", ") }} } from "../store/{{ slug }}.actions";
+{% endif %}
+{% if area.selector_imports %}
+import { {{ area.selector_imports | join(", ") }} } from "../store/{{ slug }}.selectors";
+{% endif %}
+{% if area.needs_state %}
+import type { {{ area.state_name }} } from "../store/{{ slug }}.state";
+{% endif %}
+{% if area.needs_form %}
+import { {{ area.form_class }} } from "{{ area.form_import }}";
+{% endif %}
+
+/** {{ area.area_name }} */
+@Component({
+  selector: "{{ area.selector }}",
+  templateUrl: "./{{ area.file_stem }}.component.html",
+  standalone: false,
+})
+export class {{ area.class_name }} {
+{% if area.needs_route %}
+  private readonly route = inject(ActivatedRoute);
+{% endif %}
+{% if area.needs_router %}
+  private readonly router = inject(Router);
+{% endif %}
+{% if area.needs_form %}
+  private readonly queryForm = inject({{ area.form_class }});
+{% endif %}
+{% if area.needs_store %}
+  private readonly store = inject(Store);
+{% if area.needs_state %}
+  private readonly state: Signal<{{ area.state_name }}> = this.store.selectSignal(
+    {{ area.state_selector }},
+  );
+{% endif %}
+{% for option in area.options %}
+  private readonly {{ option.param }}: Signal<{{ option.element }}[]> = this.store.selectSignal(
+    {{ option.selector }},
+  );
+{% endfor %}
+{% endif %}
+{% if area.needs_submit_guard or area.needs_loading_guard %}
+{% for button in area.buttons %}
+{% if button.submit_guard %}
+  protected readonly {{ button.submit_guard.signal }} = signal(false);
+{% endif %}
+{% if button.loading_guard %}
+  protected readonly {{ button.loading_guard.signal }} = signal(false);
+{% endif %}
+{% endfor %}
+
+  constructor() {
+{% for button in area.buttons %}
+{% if button.submit_guard %}
+    inject(Actions)
+      .pipe(
+        ofType({{ button.submit_guard.success }}, {{ button.submit_guard.failure }}),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => {
+        this.{{ button.submit_guard.signal }}.set(false);
+      });
+{% endif %}
+{% if button.loading_guard %}
+    inject(Actions)
+      .pipe(ofType({{ button.loading_guard.action }}), takeUntilDestroyed())
+      .subscribe(() => {
+        this.{{ button.loading_guard.signal }}.set(true);
+      });
+    inject(Actions)
+      .pipe(
+        ofType({{ button.loading_guard.success }}, {{ button.loading_guard.failure }}),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => {
+        this.{{ button.loading_guard.signal }}.set(false);
+      });
+{% endif %}
+{% endfor %}
+  }
+{% endif %}
+{% for button in area.buttons %}
+{% if button.disabled_method %}
+
+  protected {{ button.disabled_method }}(): boolean {
+{% for line in button.disabled_lines %}
+    {{ line }}
+{% endfor %}
+  }
+{% endif %}
+
+  protected {{ button.method }}(): void {
+{% for line in button.lines %}
+    {{ line }}
+{% endfor %}
+  }
+{% endfor %}
+}
+{% else %}
+import { Component } from "@angular/core";
+
+/** {{ area.area_name }} */
+@Component({
+  selector: "{{ area.selector }}",
+  templateUrl: "./{{ area.file_stem }}.component.html",
+  standalone: false,
+})
+export class {{ area.class_name }} {}
+{% endif %}

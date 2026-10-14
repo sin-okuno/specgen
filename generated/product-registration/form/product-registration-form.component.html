@@ -1,0 +1,23 @@
+<section data-area-type="FORM">
+  <form [formGroup]="queryForm.form">
+    <div>
+      <label for="productName">製品名</label>
+      <input id="productName" type="text" formControlName="productName" [attr.aria-invalid]="queryForm.messages().productName ? true : null" [attr.aria-describedby]="queryForm.messages().productName ? 'productName-error' : null" />
+      @if (queryForm.messages().productName) {
+        <p id="productName-error">{{ queryForm.messages().productName }}</p>
+      }
+    </div>
+    <div>
+      <label for="status">状態</label>
+      <select id="status" formControlName="status" [attr.aria-invalid]="queryForm.messages().status ? true : null" [attr.aria-describedby]="queryForm.messages().status ? 'status-error' : null">
+        <option value=""></option>
+        @for (option of optionsOpt001(); track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+      @if (queryForm.messages().status) {
+        <p id="status-error">{{ queryForm.messages().status }}</p>
+      }
+    </div>
+  </form>
+</section>

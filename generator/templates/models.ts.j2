@@ -1,0 +1,36 @@
+{{ header }}
+{% for iface in interfaces %}
+{% if iface.comment %}
+/** {{ iface.comment }} */
+{% endif %}
+export interface {{ iface.name }} {
+{% for field in iface.fields %}
+{{ field }}
+{% endfor %}
+}
+
+{% endfor %}
+{% if codes %}
+export const {{ feature_key }}Codes = {
+{% for code in codes %}
+  {{ code.key }}: {
+{% for row in code.rows %}
+    {{ row.key }}: {{ row.value }},
+{% endfor %}
+  },
+{% endfor %}
+} as const;
+
+{% endif %}
+{% if errors %}
+export const {{ feature_key }}ScreenErrors = [
+{% for error in errors %}
+  {
+    errorId: {{ error.error_id | ts }},
+    condition: {{ error.condition | ts }},
+    message: {{ error.message | ts }},
+    behavior: {{ error.behavior | ts }},
+  },
+{% endfor %}
+] as const;
+{% endif %}

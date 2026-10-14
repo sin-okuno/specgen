@@ -1,0 +1,20 @@
+<section data-area-type="DETAIL">
+  <dl>
+    <div id="id">
+      <dt>ID</dt>
+      <dd>{{ product().id == null ? "-" : product().id }}</dd>
+    </div>
+    <div id="productName">
+      <dt>製品名</dt>
+      <dd>{{ product().name == null || product().name === "" ? "-" : product().name }}</dd>
+    </div>
+    <div id="status">
+      <dt>状態</dt>
+      <dd>{{ codeLabel("CODE-001", product().status, "-") }}</dd>
+    </div>
+    <div id="manufacturerName">
+      <dt>メーカー名</dt>
+      <dd>{{ product().manufacturer.name == null || product().manufacturer.name === "" ? "-" : product().manufacturer.name }}</dd>
+    </div>
+  </dl>
+</section>

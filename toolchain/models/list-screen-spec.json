@@ -1,0 +1,842 @@
+{
+  "schema_version": "0.3",
+  "source": "list-screen-spec.md",
+  "metadata": {
+    "version": "1.5",
+    "screen_id": "SCR-001",
+    "screen_name": "製品一覧",
+    "screen_type": "LIST",
+    "url": "/products"
+  },
+  "chapters": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "model": {
+    "areas": [
+      {
+        "line": 26,
+        "area_id": "AREA-001",
+        "area_name": "検索条件",
+        "area_type": "QUERY",
+        "description": "検索条件入力",
+        "visibility_condition": "ALWAYS"
+      },
+      {
+        "line": 27,
+        "area_id": "AREA-002",
+        "area_name": "操作",
+        "area_type": "ACTIONS",
+        "description": "画面操作",
+        "visibility_condition": "ALWAYS"
+      },
+      {
+        "line": 28,
+        "area_id": "AREA-003",
+        "area_name": "検索結果",
+        "area_type": "LIST",
+        "description": "製品一覧表示",
+        "visibility_condition": "ALWAYS"
+      }
+    ],
+    "layout": [
+      {
+        "line": 34,
+        "display_order": "1",
+        "area_id": "AREA-001",
+        "position": "TOP"
+      },
+      {
+        "line": 35,
+        "display_order": "2",
+        "area_id": "AREA-002",
+        "position": "CENTER"
+      },
+      {
+        "line": 36,
+        "display_order": "3",
+        "area_id": "AREA-003",
+        "position": "BOTTOM"
+      }
+    ],
+    "inputs": [
+      {
+        "line": 44,
+        "field_id": "productName",
+        "area_id": "AREA-001",
+        "label": "製品名",
+        "ui_type": "TEXT",
+        "data_type": "string",
+        "required": "No",
+        "default_value": "EMPTY",
+        "constraints": "maxLength:100",
+        "validation_timing": "ON_EXECUTE",
+        "error_message": "100文字以内で入力してください"
+      },
+      {
+        "line": 45,
+        "field_id": "status",
+        "area_id": "AREA-001",
+        "label": "状態",
+        "ui_type": "SELECT",
+        "data_type": "string",
+        "required": "No",
+        "default_value": "EMPTY",
+        "constraints": "options:OPT-001",
+        "validation_timing": "ON_EXECUTE",
+        "error_message": "有効な状態を選択してください"
+      }
+    ],
+    "displays": [
+      {
+        "line": 51,
+        "field_id": "id",
+        "area_id": "AREA-003",
+        "label": "ID",
+        "data_type": "integer",
+        "source": "list.items[].id",
+        "display_format": "NUMBER",
+        "empty_display": "-"
+      },
+      {
+        "line": 52,
+        "field_id": "productName",
+        "area_id": "AREA-003",
+        "label": "製品名",
+        "data_type": "string",
+        "source": "list.items[].name",
+        "display_format": "TEXT",
+        "empty_display": "-"
+      },
+      {
+        "line": 53,
+        "field_id": "status",
+        "area_id": "AREA-003",
+        "label": "状態",
+        "data_type": "string",
+        "source": "list.items[].status",
+        "display_format": "CODE:CODE-001",
+        "empty_display": "-"
+      }
+    ],
+    "actions": [
+      {
+        "line": 59,
+        "field_id": "searchButton",
+        "area_id": "AREA-002",
+        "label": "検索",
+        "ui_type": "BUTTON",
+        "event_id": "EVT-001",
+        "visibility_condition": "ALWAYS",
+        "enabled_condition": "NOT_LOADING"
+      },
+      {
+        "line": 60,
+        "field_id": "createButton",
+        "area_id": "AREA-002",
+        "label": "新規登録",
+        "ui_type": "BUTTON",
+        "event_id": "EVT-002",
+        "visibility_condition": "ALWAYS",
+        "enabled_condition": "ALWAYS"
+      }
+    ],
+    "controls": [],
+    "cross_validations": [],
+    "options": [
+      {
+        "line": 74,
+        "option_id": "OPT-001",
+        "fetch_method": "API",
+        "option_source": "API-002.statuses",
+        "display_value": "label",
+        "internal_value": "value"
+      }
+    ],
+    "initialization": [
+      {
+        "line": 82,
+        "init_id": "INIT-001",
+        "operation": "APPLY_DEFAULTS",
+        "operation_description": "検索条件初期化",
+        "condition": "ALWAYS",
+        "depends_on": "NONE",
+        "reference": "DEFAULTS"
+      },
+      {
+        "line": 83,
+        "init_id": "INIT-002",
+        "operation": "CALL_API",
+        "operation_description": "候補取得",
+        "condition": "ALWAYS",
+        "depends_on": "INIT-001",
+        "reference": "API-002"
+      },
+      {
+        "line": 84,
+        "init_id": "INIT-003",
+        "operation": "CALL_EVENT",
+        "operation_description": "初期検索",
+        "condition": "ALWAYS",
+        "depends_on": "INIT-001",
+        "reference": "EVT-001"
+      }
+    ],
+    "defaults": [
+      {
+        "line": 90,
+        "destination": "input.productName",
+        "value": "EMPTY"
+      },
+      {
+        "line": 91,
+        "destination": "input.status",
+        "value": "EMPTY"
+      }
+    ],
+    "route_parameters": [],
+    "events": [
+      {
+        "line": 103,
+        "event_id": "EVT-001",
+        "event_name": "検索",
+        "trigger": "ON_INIT,ON_CLICK",
+        "origin": "INIT-003,searchButton",
+        "description": "製品検索"
+      },
+      {
+        "line": 104,
+        "event_id": "EVT-002",
+        "event_name": "新規登録",
+        "trigger": "ON_CLICK",
+        "origin": "createButton",
+        "description": "登録画面遷移"
+      },
+      {
+        "line": 105,
+        "event_id": "EVT-003",
+        "event_name": "ページ変更",
+        "trigger": "ON_CHANGE",
+        "origin": "pagination.page",
+        "description": "ページ移動"
+      },
+      {
+        "line": 106,
+        "event_id": "EVT-004",
+        "event_name": "表示件数変更",
+        "trigger": "ON_CHANGE",
+        "origin": "pagination.pageSize",
+        "description": "表示件数変更"
+      },
+      {
+        "line": 107,
+        "event_id": "EVT-005",
+        "event_name": "ソート変更",
+        "trigger": "ON_CHANGE",
+        "origin": "sort.ordering",
+        "description": "ソート変更"
+      }
+    ],
+    "event_steps": [
+      {
+        "line": 113,
+        "event_id": "EVT-001",
+        "step": "1",
+        "operation": "VALIDATE",
+        "operation_description": "検索条件チェック",
+        "condition": "ALWAYS",
+        "reference": "QUERY",
+        "on_success": "NEXT",
+        "on_failure": "STOP"
+      },
+      {
+        "line": 114,
+        "event_id": "EVT-001",
+        "step": "2",
+        "operation": "RESET_PAGE",
+        "operation_description": "検索開始時に先頭ページへ",
+        "condition": "ALWAYS",
+        "reference": "pagination.page",
+        "on_success": "NEXT",
+        "on_failure": "STOP"
+      },
+      {
+        "line": 115,
+        "event_id": "EVT-001",
+        "step": "3",
+        "operation": "APPLY_QUERY",
+        "operation_description": "入力中の検索条件を適用",
+        "condition": "ALWAYS",
+        "reference": "QUERY",
+        "on_success": "NEXT",
+        "on_failure": "STOP"
+      },
+      {
+        "line": 116,
+        "event_id": "EVT-001",
+        "step": "4",
+        "operation": "CALL_API",
+        "operation_description": "一覧取得",
+        "condition": "ALWAYS",
+        "reference": "API-001",
+        "on_success": "END",
+        "on_failure": "COMMON_ERROR"
+      },
+      {
+        "line": 117,
+        "event_id": "EVT-002",
+        "step": "1",
+        "operation": "NAVIGATE",
+        "operation_description": "登録画面へ遷移",
+        "condition": "ALWAYS",
+        "reference": "NAV-001",
+        "on_success": "END",
+        "on_failure": "STOP"
+      },
+      {
+        "line": 118,
+        "event_id": "EVT-003",
+        "step": "1",
+        "operation": "CALL_API",
+        "operation_description": "指定ページ取得",
+        "condition": "ALWAYS",
+        "reference": "API-001",
+        "on_success": "END",
+        "on_failure": "COMMON_ERROR"
+      },
+      {
+        "line": 119,
+        "event_id": "EVT-004",
+        "step": "1",
+        "operation": "RESET_PAGE",
+        "operation_description": "先頭ページに戻す",
+        "condition": "ALWAYS",
+        "reference": "pagination.page",
+        "on_success": "NEXT",
+        "on_failure": "STOP"
+      },
+      {
+        "line": 120,
+        "event_id": "EVT-004",
+        "step": "2",
+        "operation": "CALL_API",
+        "operation_description": "表示件数変更後の取得",
+        "condition": "ALWAYS",
+        "reference": "API-001",
+        "on_success": "END",
+        "on_failure": "COMMON_ERROR"
+      },
+      {
+        "line": 121,
+        "event_id": "EVT-005",
+        "step": "1",
+        "operation": "RESET_PAGE",
+        "operation_description": "先頭ページに戻す",
+        "condition": "ALWAYS",
+        "reference": "pagination.page",
+        "on_success": "NEXT",
+        "on_failure": "STOP"
+      },
+      {
+        "line": 122,
+        "event_id": "EVT-005",
+        "step": "2",
+        "operation": "CALL_API",
+        "operation_description": "ソート変更後の取得",
+        "condition": "ALWAYS",
+        "reference": "API-001",
+        "on_success": "END",
+        "on_failure": "COMMON_ERROR"
+      }
+    ],
+    "dialogs": [],
+    "apis": [
+      {
+        "line": 134,
+        "api_id": "API-001",
+        "purpose": "一覧取得",
+        "method": "GET",
+        "endpoint": "/api/products/"
+      },
+      {
+        "line": 135,
+        "api_id": "API-002",
+        "purpose": "状態候補取得",
+        "method": "GET",
+        "endpoint": "/api/products/options/"
+      }
+    ],
+    "requests": [
+      {
+        "line": 141,
+        "api_id": "API-001",
+        "parameter": "name",
+        "data_type": "string",
+        "required": "No",
+        "source": "query.applied.productName",
+        "location": "QUERY"
+      },
+      {
+        "line": 142,
+        "api_id": "API-001",
+        "parameter": "status",
+        "data_type": "string",
+        "required": "No",
+        "source": "query.applied.status",
+        "location": "QUERY"
+      },
+      {
+        "line": 143,
+        "api_id": "API-001",
+        "parameter": "page",
+        "data_type": "integer",
+        "required": "Yes",
+        "source": "pagination.page",
+        "location": "QUERY"
+      },
+      {
+        "line": 144,
+        "api_id": "API-001",
+        "parameter": "page_size",
+        "data_type": "integer",
+        "required": "Yes",
+        "source": "pagination.pageSize",
+        "location": "QUERY"
+      },
+      {
+        "line": 145,
+        "api_id": "API-001",
+        "parameter": "ordering",
+        "data_type": "string",
+        "required": "Yes",
+        "source": "sort.ordering",
+        "location": "QUERY"
+      }
+    ],
+    "responses": [
+      {
+        "line": 151,
+        "api_id": "API-001",
+        "field": "count",
+        "data_type": "integer",
+        "required": "Yes",
+        "nullable": "No"
+      },
+      {
+        "line": 152,
+        "api_id": "API-001",
+        "field": "results",
+        "data_type": "productSummary[]",
+        "required": "Yes",
+        "nullable": "No"
+      },
+      {
+        "line": 153,
+        "api_id": "API-002",
+        "field": "statuses",
+        "data_type": "statusOption[]",
+        "required": "Yes",
+        "nullable": "No"
+      }
+    ],
+    "response_mappings": [
+      {
+        "line": 159,
+        "api_id": "API-001",
+        "response_field": "results",
+        "destination": "list.items",
+        "mapping_mode": "REPLACE"
+      },
+      {
+        "line": 160,
+        "api_id": "API-001",
+        "response_field": "count",
+        "destination": "pagination.total",
+        "mapping_mode": "SET"
+      },
+      {
+        "line": 161,
+        "api_id": "API-002",
+        "response_field": "statuses",
+        "destination": "options.OPT-001",
+        "mapping_mode": "REPLACE"
+      }
+    ],
+    "api_policies": [
+      {
+        "line": 167,
+        "item": "認証・認可",
+        "value": "API側で実施"
+      },
+      {
+        "line": 168,
+        "item": "HTTP 403",
+        "value": "Angular共通権限エラー表示"
+      },
+      {
+        "line": 169,
+        "item": "未指定の任意パラメータ",
+        "value": "送信しない"
+      }
+    ],
+    "codes": [
+      {
+        "line": 207,
+        "code_id": "CODE-001",
+        "code": "new",
+        "display_value": "新規"
+      },
+      {
+        "line": 208,
+        "code_id": "CODE-001",
+        "code": "closed",
+        "display_value": "完了"
+      }
+    ],
+    "formats": [
+      {
+        "line": 214,
+        "display_format": "TEXT",
+        "value": "文字列"
+      },
+      {
+        "line": 215,
+        "display_format": "NUMBER",
+        "value": "数値"
+      },
+      {
+        "line": 216,
+        "display_format": "CODE:CODE-001",
+        "value": "コード変換"
+      }
+    ],
+    "empty_values": [
+      {
+        "line": 222,
+        "value": "null",
+        "display": "-"
+      },
+      {
+        "line": 223,
+        "value": "空文字",
+        "display": "空欄"
+      }
+    ],
+    "navigation": [
+      {
+        "line": 231,
+        "nav_id": "NAV-001",
+        "event_id": "EVT-002",
+        "target": "/products/new",
+        "condition": "ALWAYS",
+        "parameters": "NONE"
+      }
+    ],
+    "back_navigation": [],
+    "unsaved_changes": [],
+    "screen_errors": [
+      {
+        "line": 263,
+        "error_id": "ERR-001",
+        "condition": "検索結果0件",
+        "message": "データがありません",
+        "behavior": "空状態を表示"
+      }
+    ],
+    "acceptance_criteria": [
+      {
+        "line": 306,
+        "acceptance_id": "AC-001",
+        "target": "初期表示",
+        "precondition": "API正常",
+        "action": "画面を開く",
+        "expected": "初期表示処理が実行される"
+      },
+      {
+        "line": 307,
+        "acceptance_id": "AC-002",
+        "target": "認可エラー",
+        "precondition": "APIが403を返す",
+        "action": "API呼び出し",
+        "expected": "共通権限エラーが表示される"
+      }
+    ],
+    "screen_properties": [
+      {
+        "line": 10,
+        "item": "画面ID",
+        "value": "SCR-001"
+      },
+      {
+        "line": 11,
+        "item": "画面名",
+        "value": "製品一覧"
+      },
+      {
+        "line": 12,
+        "item": "画面種別",
+        "value": "LIST"
+      },
+      {
+        "line": 13,
+        "item": "URL",
+        "value": "/products"
+      },
+      {
+        "line": 14,
+        "item": "画面概要",
+        "value": "製品の製品一覧を行う"
+      },
+      {
+        "line": 15,
+        "item": "対象ユーザー",
+        "value": "認証済みユーザー"
+      },
+      {
+        "line": 16,
+        "item": "関連画面",
+        "value": "SCR-001,SCR-002,SCR-003,SCR-004"
+      },
+      {
+        "line": 17,
+        "item": "共通認可仕様",
+        "value": "API側で認可判定"
+      },
+      {
+        "line": 18,
+        "item": "共通エラー仕様",
+        "value": "HTTP 403は共通権限エラー表示"
+      }
+    ],
+    "named_type_catalog": [
+      {
+        "line": 177,
+        "type_name": "productSummary",
+        "description": "一覧表示用製品"
+      },
+      {
+        "line": 178,
+        "type_name": "statusOption",
+        "description": "状態選択候補"
+      }
+    ],
+    "named_type_fields": [
+      {
+        "line": 184,
+        "type_name": "productSummary",
+        "field": "id",
+        "data_type": "integer",
+        "required": "Yes",
+        "nullable": "No"
+      },
+      {
+        "line": 185,
+        "type_name": "productSummary",
+        "field": "name",
+        "data_type": "string",
+        "required": "Yes",
+        "nullable": "No"
+      },
+      {
+        "line": 186,
+        "type_name": "productSummary",
+        "field": "status",
+        "data_type": "string",
+        "required": "Yes",
+        "nullable": "No"
+      },
+      {
+        "line": 187,
+        "type_name": "statusOption",
+        "field": "label",
+        "data_type": "string",
+        "required": "Yes",
+        "nullable": "No"
+      },
+      {
+        "line": 188,
+        "type_name": "statusOption",
+        "field": "value",
+        "data_type": "string",
+        "required": "Yes",
+        "nullable": "No"
+      }
+    ],
+    "state_types": [
+      {
+        "line": 194,
+        "state_path": "list.items",
+        "data_type": "productSummary[]",
+        "nullable": "No"
+      },
+      {
+        "line": 195,
+        "state_path": "pagination.page",
+        "data_type": "integer",
+        "nullable": "No"
+      },
+      {
+        "line": 196,
+        "state_path": "pagination.pageSize",
+        "data_type": "integer",
+        "nullable": "No"
+      },
+      {
+        "line": 197,
+        "state_path": "pagination.total",
+        "data_type": "integer",
+        "nullable": "No"
+      },
+      {
+        "line": 198,
+        "state_path": "sort.ordering",
+        "data_type": "string",
+        "nullable": "No"
+      },
+      {
+        "line": 199,
+        "state_path": "options.OPT-001",
+        "data_type": "statusOption[]",
+        "nullable": "No"
+      }
+    ],
+    "non_functional": [
+      {
+        "line": 297,
+        "item": "Loading",
+        "requirement": "API処理中に表示"
+      },
+      {
+        "line": 298,
+        "item": "二重操作防止",
+        "requirement": "同一処理の重複実行を抑止"
+      },
+      {
+        "line": 299,
+        "item": "セキュリティ",
+        "requirement": "API側で認証・認可を実施"
+      },
+      {
+        "line": 300,
+        "item": "対応ブラウザ",
+        "requirement": "Chrome、Edge"
+      }
+    ],
+    "open_items": [],
+    "screen_specific": {
+      "11.1": [
+        {
+          "line": 271,
+          "item": "ページング方式",
+          "value": "SERVER"
+        },
+        {
+          "line": 272,
+          "item": "初期ページ",
+          "value": "1"
+        },
+        {
+          "line": 273,
+          "item": "初期表示件数",
+          "value": "20"
+        },
+        {
+          "line": 274,
+          "item": "表示件数候補",
+          "value": "20,50,100"
+        },
+        {
+          "line": 275,
+          "item": "初期ソート",
+          "value": "updated_at DESC"
+        },
+        {
+          "line": 276,
+          "item": "複数列ソート",
+          "value": "No"
+        },
+        {
+          "line": 277,
+          "item": "行選択方式",
+          "value": "NONE"
+        },
+        {
+          "line": 278,
+          "item": "CSV出力",
+          "value": "No"
+        },
+        {
+          "line": 279,
+          "item": "検索時ページ初期化",
+          "value": "Yes"
+        }
+      ],
+      "11.2": [],
+      "11.3": [],
+      "11.4": []
+    },
+    "section_status": {
+      "1.0": "present",
+      "2.0": "present",
+      "2.1": "present",
+      "2.2": "present",
+      "3.0": "present",
+      "3.1": "present",
+      "3.2": "present",
+      "3.3": "present",
+      "3.4": "not_applicable",
+      "3.5": "not_applicable",
+      "3.6": "present",
+      "4.0": "present",
+      "4.1": "present",
+      "4.2": "present",
+      "4.3": "not_applicable",
+      "5.0": "present",
+      "5.1": "present",
+      "5.2": "present",
+      "5.3": "not_applicable",
+      "6.0": "present",
+      "6.1": "present",
+      "6.2": "present",
+      "6.3": "present",
+      "6.4": "present",
+      "6.5": "present",
+      "6.6": "present",
+      "6.7": "present",
+      "7.0": "present",
+      "7.1": "present",
+      "7.2": "present",
+      "7.3": "present",
+      "8.0": "present",
+      "8.1": "present",
+      "8.2": "not_applicable",
+      "8.3": "not_applicable",
+      "9.0": "present",
+      "9.1": "present",
+      "9.2": "not_applicable",
+      "10.0": "present",
+      "10.1": "present",
+      "10.2": "present",
+      "11.0": "present",
+      "11.1": "present",
+      "11.2": "not_applicable",
+      "11.3": "not_applicable",
+      "11.4": "not_applicable",
+      "12.0": "present",
+      "13.0": "present",
+      "14.0": "not_applicable"
+    }
+  }
+}

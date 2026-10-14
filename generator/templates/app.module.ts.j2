@@ -1,0 +1,31 @@
+{{ header }}
+import { NgModule } from "@angular/core";
+import { BrowserModule } from "@angular/platform-browser";
+import { RouterModule } from "@angular/router";
+import { EffectsModule } from "@ngrx/effects";
+import { StoreModule } from "@ngrx/store";
+
+{% for route in routes %}
+import { {{ route.screen_class }} } from "../{{ route.slug }}/{{ route.slug }}.component";
+import { {{ route.module_class }} } from "../{{ route.slug }}/{{ route.slug }}.module";
+{% endfor %}
+import { AppComponent } from "./app.component";
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    StoreModule.forRoot({}),
+    EffectsModule.forRoot(),
+    RouterModule.forRoot([
+{% for route in routes %}
+      { path: {{ route.path | ts }}, component: {{ route.screen_class }}, pathMatch: "full" },
+{% endfor %}
+    ]),
+{% for route in routes %}
+    {{ route.module_class }},
+{% endfor %}
+  ],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}

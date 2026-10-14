@@ -1,0 +1,79 @@
+{{ header }}
+// 画面を開くと、初期化の CALL_API と、CALL_EVENT が参照する操作のうち CALL_API だけを実行する。
+// その CALL_API が READ_ROUTE に依存し、ほかの依存が空の入力初期値だけのときは、画面 URL のパスパラメータを読んで渡す。
+// 応答の input への代入は、フォームの同名コントロールへ入れる。
+// 検索ボタンは VALIDATE、APPLY_QUERY、RESET_PAGE、CALL_API を実行する。
+// ページ、表示件数、ソートの変更でも一覧を取り直す。件数とソートの変更はページを初期ページに戻す。
+// 一覧の取得結果が 0 件のときは、その取得が終わったあとだけ空状態のメッセージを出す。
+// パラメータが NONE の NAVIGATE ボタンは、その URL へ遷移する。
+// パラメータが route の同名項目で、遷移先のプレースホルダと一致するときは、画面 URL の値を入れて遷移する。
+// 保存は VALIDATE と CALL_API を実行し、API 成功後にパラメータ無しの遷移を行う。
+// 登録の二重送信防止が Yes の保存は、その通信が終わるまでもう一度送らない。
+// 有効条件に NOT_LOADING があるボタンは、そのボタンの API 通信中は押せない。通信が終わると再び押せる。
+// APPLY_DEFAULTS は定数のまま。フォームの初期値は空である。
+// MARK_PRISTINE は、依存する初期化の API がすべて成功したあとフォームを未変更に戻す。失敗したときは戻さない。
+
+export const {{ feature_key }}ScreenType = {{ screen_type | ts }};
+
+export const {{ feature_key }}ScreenUrl = {{ screen_url | ts }};
+
+export const {{ feature_key }}Initialization = [
+{% for step in initialization %}
+  {
+    initId: {{ step.init_id | ts }},
+    operation: {{ step.operation | ts }},
+    description: {{ step.operation_description | ts }},
+    condition: {{ step.condition | ts }},
+    dependsOn: {{ step.depends_on | ts }},
+    reference: {{ step.reference | ts }},
+  },
+{% endfor %}
+] as const;
+
+export const {{ feature_key }}Events = [
+{% for event in events %}
+  {
+    eventId: {{ event.event_id | ts }},
+    eventName: {{ event.event_name | ts }},
+    trigger: {{ event.trigger | ts }},
+    origin: {{ event.origin | ts }},
+    description: {{ event.description | ts }},
+  },
+{% endfor %}
+] as const;
+
+export const {{ feature_key }}EventSteps = [
+{% for step in event_steps %}
+  {
+    eventId: {{ step.event_id | ts }},
+    step: {{ step.step | ts }},
+    operation: {{ step.operation | ts }},
+    description: {{ step.operation_description | ts }},
+    condition: {{ step.condition | ts }},
+    reference: {{ step.reference | ts }},
+    onSuccess: {{ step.on_success | ts }},
+    onFailure: {{ step.on_failure | ts }},
+  },
+{% endfor %}
+] as const;
+
+export const {{ feature_key }}Navigation = [
+{% for row in navigation %}
+  {
+    navId: {{ row.nav_id | ts }},
+    eventId: {{ row.event_id | ts }},
+    target: {{ row.target | ts }},
+    condition: {{ row.condition | ts }},
+    parameters: {{ row.parameters | ts }},
+  },
+{% endfor %}
+] as const;
+
+export const {{ feature_key }}Defaults = [
+{% for row in defaults %}
+  {
+    destination: {{ row.destination | ts }},
+    value: {{ row.value | ts }},
+  },
+{% endfor %}
+] as const;

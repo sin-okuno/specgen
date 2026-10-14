@@ -1,0 +1,16 @@
+{{ header }}
+import { createFeatureSelector{% if leaves %}, createSelector{% endif %} } from "@ngrx/store";
+
+import { {{ feature_key }}FeatureKey } from "./{{ slug }}.state";
+import type { {{ class_prefix }}State } from "./{{ slug }}.state";
+
+export const select{{ class_prefix }}State = createFeatureSelector<{{ class_prefix }}State>(
+  {{ feature_key }}FeatureKey,
+);
+{% for leaf in leaves %}
+
+export const {{ leaf.name }} = createSelector(
+  select{{ class_prefix }}State,
+  (state: {{ class_prefix }}State) => {{ leaf.expr }},
+);
+{% endfor %}

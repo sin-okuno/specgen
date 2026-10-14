@@ -1,0 +1,37 @@
+{{ header }}
+import { CommonModule } from "@angular/common";
+import { provideHttpClient } from "@angular/common/http";
+import { NgModule } from "@angular/core";
+import { ReactiveFormsModule } from "@angular/forms";
+import { EffectsModule } from "@ngrx/effects";
+import { StoreModule } from "@ngrx/store";
+
+{% for area in areas %}
+import { {{ area.class_name }} } from "./{{ area.folder }}/{{ area.file_stem }}.component";
+{% endfor %}
+import { {{ screen_class }} } from "./{{ slug }}.component";
+{% if form_class %}
+import { {{ form_class }} } from "{{ form_import }}";
+{% endif %}
+import { {{ service_name }} } from "./services/{{ slug }}-api.service";
+import { {{ effects_name }} } from "./store/{{ slug }}.effects";
+import { {{ reducer_name }} } from "./store/{{ slug }}.reducer";
+import { {{ feature_key }}FeatureKey } from "./store/{{ slug }}.state";
+
+@NgModule({
+  declarations: [
+    {{ screen_class }},
+{% for area in areas %}
+    {{ area.class_name }},
+{% endfor %}
+  ],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    StoreModule.forFeature({{ feature_key }}FeatureKey, {{ reducer_name }}),
+    EffectsModule.forFeature([{{ effects_name }}]),
+  ],
+  exports: [{{ screen_class }}],
+  providers: [provideHttpClient(), {{ service_name }}{% if form_class %}, {{ form_class }}{% endif %}],
+})
+export class {{ class_name }} {}

@@ -1,0 +1,44 @@
+{{ header }}
+{% if initialize %}
+import { Component, OnInit, inject } from "@angular/core";
+{% if routes %}
+import { ActivatedRoute } from "@angular/router";
+{% endif %}
+import { Store } from "@ngrx/store";
+
+import { {{ initialize }} } from "./store/{{ slug }}.actions";
+{% else %}
+import { Component } from "@angular/core";
+{% endif %}
+
+@Component({
+  selector: "{{ selector }}",
+  templateUrl: "./{{ file_stem }}.component.html",
+  standalone: false,
+})
+export class {{ class_name }}{% if initialize %} implements OnInit{% endif %} {
+{% if initialize %}
+  private readonly store = inject(Store);
+{% if routes %}
+  private readonly route = inject(ActivatedRoute);
+{% endif %}
+
+  ngOnInit(): void {
+{% if routes %}
+{% for route in routes %}
+    const {{ route.name }} = this.route.snapshot.paramMap.get({{ route.literal }});
+    if ({{ route.name }} === null || !/^(0|[1-9]\d*)$/.test({{ route.name }})) {
+      return;
+    }
+{% endfor %}
+    this.store.dispatch({{ initialize }}({
+{% for route in routes %}
+      {{ route.name }}: Number({{ route.name }}),
+{% endfor %}
+    }));
+{% else %}
+    this.store.dispatch({{ initialize }}());
+{% endif %}
+  }
+{% endif %}
+}

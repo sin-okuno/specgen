@@ -1,0 +1,39 @@
+{{ header }}
+import { Injectable, signal } from "@angular/core";
+import { FormControl, FormGroup } from "@angular/forms";
+{% if type_imports %}
+import type { {{ type_imports | join(", ") }} } from "../models/{{ slug }}.models";
+{% endif %}
+
+@Injectable()
+export class {{ class_name }} {
+  readonly form = new FormGroup({
+{% for field in fields %}
+    {{ field.name }}: new FormControl<string>({{ field.initial }}, { nonNullable: true }),
+{% endfor %}
+  });
+  readonly applied = signal(this.form.getRawValue());
+  readonly messages = signal<Readonly<Record<string, string>>>({});
+
+  applyQuery(): void {
+    this.applied.set(this.form.getRawValue());
+  }
+
+  validate({{ option_signature }}): boolean {
+    const value = this.form.getRawValue();
+    const messages: Record<string, string> = {};
+{% for line in check_lines %}
+    {{ line }}
+{% endfor %}
+    this.messages.set(messages);
+    return Object.keys(messages).length === 0;
+  }
+
+  isValid({{ option_signature }}): boolean {
+    const value = this.form.getRawValue();
+{% for line in valid_lines %}
+    {{ line }}
+{% endfor %}
+    return true;
+  }
+}

@@ -1,0 +1,28 @@
+{{ header }}
+import { createAction, props } from "@ngrx/store";
+{% if model_imports %}
+import type {
+{% for name in model_imports %}
+  {{ name }},
+{% endfor %}
+} from "../models/{{ slug }}.models";
+{% endif %}
+{% for action in actions %}
+
+{% if action.props %}
+export const {{ action.var }} = createAction(
+  {{ action.type | ts }},
+  props<{
+{% for prop in action.props %}
+    {{ prop.decl }}
+{% endfor %}
+  }>()
+);
+{% else %}
+export const {{ action.var }} = createAction({{ action.type | ts }});
+{% endif %}
+{% endfor %}
+{% if not actions %}
+
+export {};
+{% endif %}
